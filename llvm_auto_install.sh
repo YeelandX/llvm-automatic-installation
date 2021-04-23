@@ -4,10 +4,10 @@
 # ｜Attention!Install environmental requirement!               |
 # ｜                                                           ｜
 # ｜Targets to build should be one of: X86 PowerPC AArch64     ｜
-# ｜cmake >= 3.4.3                                             ｜
+# ｜cmake >= 3.13.4                                            ｜
 # ｜gcc >= 5.1.0                                               ｜
-# ｜python >= 2.7                                              ｜
-# ｜zlib >=1.2.3                                               ｜
+# ｜python >= 3.6                                              ｜
+# ｜zlib >=1.2.3.4                                             ｜
 # ｜GNU make >= 3.7.9                                          ｜
 # +------------------------------------------------------------+
 
@@ -18,7 +18,7 @@
 #   |-llvm_install(llvm安装目录)
 #   |-env.sh(设置环境变量:source env.sh)
 
-# Environment check
+# Environment manual check
 while true; do
     read -p "Please check your software version and type 'Y': " check
     case $check in
@@ -38,11 +38,13 @@ INSTALL_PATH=$(pwd)
 INSTALL_PKG=$INSTALL_PATH/llvm_installation_pkg
 LLVM_INSTALL_PREFIX=$INSTALL_PATH/llvm_install
 NETCDF_INSTALL_PREFIX=$INSTALL_PATH/netcdf_install
-ARCH=X86
-NPROC=2
-
 GCC_VERSION=$(which gcc)
 CXX_VERSION=$(which g++)
+
+#***Manual Setting***#
+ARCH=X86
+NPROC=4
+#********************#
 
 CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_PREFIX \
     -DLLVM_CONFIG=$LLVM_INSTALL_PREFIX/bin/llvm-config \
@@ -51,11 +53,17 @@ CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_PREFIX \
     -DCMAKE_Fortran_COMPILER=$LLVM_INSTALL_PREFIX/bin/flang \
     -DLLVM_TARGETS_TO_BUILD=$ARCH \
     -DCMAKE_BUILD_TYPE=release"
+#***Other optional CMAKE_OPTIONS***#
+#-DCMAKE_C_FLAGS=-L$HOME/toolchains/lib64
+#-DCMAKE_CXX_FLAGS=-L$HOME/toolchains/lib64
+#-DCMAKE_CXX_LINK_FLAGS="-Wl,-rpath,$HOME/toolchains/lib64 -L$HOME/toolchains/lib64" 
+#-DGCC_INSTALL_PREFIX=$HOME/toolchains ..
+#**********************************#
+
 
 # Get llvm_installation_pkg
 cd $INSTALL_PATH
 if [[ ! -d llvm_installation_pkg ]]; then
-    #git config --global http.postBuffer 50M
     git clone --recursive  git://github.com/YeelandX/llvm_installation_pkg.git || exit
 fi
 
@@ -63,30 +71,30 @@ fi
 cd $INSTALL_PKG/llvm || exit
 mkdir -p build && cd build
 cmake $CMAKE_OPTIONS -DCMAKE_C_COMPILER=$GCC_VERSION -DCMAKE_CXX_COMPILER=$CXX_VERSION .. || exit
-make -j$NPROC && make install || exit
+make -j$NPROC -l1 && make install || exit
 
 # Install flang-driver
 cd $INSTALL_PKG/flang-driver || exit
 mkdir -p build && cd build
 cmake $CMAKE_OPTIONS -DCMAKE_C_COMPILER=$GCC_VERSION -DCMAKE_CXX_COMPILER=$CXX_VERSION .. || exit
-make -j$NPROC && make install || exit
+make -j$NPROC -l1 && make install || exit
 
 # Install openmp
 cd $INSTALL_PKG/openmp || exit
 mkdir -p build && cd build
 cmake $CMAKE_OPTIONS .. || exit
-make -j$NPROC && make install || exit
+make -j$NPROC -l1 && make install || exit
 
 #Install flang
 cd $INSTALL_PKG/flang/runtime/libpgmath || exit
 mkdir -p build && cd build
 cmake $CMAKE_OPTIONS .. || exit
-make -j$NPROC && make install || exit
+make -j$NPROC -l1 && make install || exit
 
 cd $INSTALL_PKG/flang || exit
 mkdir -p build && cd build
 cmake $CMAKE_OPTIONS .. || exit
-make -j$NPROC && make install || exit
+make -j$NPROC -l1 && make install || exit
 
 #Environment configuration for llvm
 export PATH=$LLVM_INSTALL_PREFIX/bin:$PATH
