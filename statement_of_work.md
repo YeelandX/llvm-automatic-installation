@@ -315,6 +315,6 @@ setup.sh内容如下:
     CPPFLAGS=-I$NETCDF_INSTALL_PREFIX/include LDFLAGS=-L$NETCDF_INSTALL_PREFIX/lib LD_LIBRARY_PATH=$NETCDF_INSTALL_PREFIX/lib:$LD_LIBRARY_PATH LIBS="-lnetcdf -lhdf5_hl -lhdf5 -lz" ./configure --prefix=$NETCDF_INSTALL_PREFIX --disable-dap --enable-shared=no --disable-netcdf4
     make -j$NPROC && make check && make install 
 
-运行`build-netcdf.sh`
+运行`build-netcdf.sh`，注意要在`/yourpath/llvm`路径下运行！
 
     ./build-netcdf.sh
